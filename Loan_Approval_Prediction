@@ -1,0 +1,465 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[5]:
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+
+
+# In[6]:
+
+
+dataset =pd.read_csv(r'C:\Users\Acer\OneDrive\Desktop\Python_Diwali_Sales_Analysis\archive\loan-train.csv')
+
+
+# In[7]:
+
+
+dataset.head()
+
+
+# In[8]:
+
+
+dataset.shape
+
+
+# In[9]:
+
+
+dataset.info()
+
+
+# In[11]:
+
+
+dataset.describe()
+
+
+# In[12]:
+
+
+pd.crosstab(dataset['Credit_History'],dataset['Loan_Status'], margins= True)
+
+
+# In[13]:
+
+
+dataset.boxplot(column='ApplicantIncome')
+
+
+# In[14]:
+
+
+dataset['ApplicantIncome'].hist(bins= 20)
+
+
+# In[15]:
+
+
+dataset['CoapplicantIncome'].hist(bins= 20)
+
+
+# In[16]:
+
+
+dataset.boxplot(column= 'ApplicantIncome', by ='Education')
+
+
+# In[17]:
+
+
+dataset.boxplot(column='LoanAmount')
+
+
+# In[18]:
+
+
+dataset['LoanAmount'].hist(bins = 20)
+
+
+# In[19]:
+
+
+# Normalisation 
+
+
+# In[20]:
+
+
+dataset['LoanAmount_log']=np.log(dataset['LoanAmount'])
+dataset['LoanAmount_log'].hist(bins =20)
+
+
+# In[21]:
+
+
+dataset.isnull().sum()
+
+
+# In[22]:
+
+
+dataset['Gender'].fillna(dataset['Gender'].mode()[0],inplace= True)
+
+
+# In[23]:
+
+
+dataset['Married'].fillna(dataset['Married'].mode()[0],inplace= True)
+
+
+# In[24]:
+
+
+dataset['Dependents'].fillna(dataset['Dependents'].mode()[0],inplace= True)
+
+
+# In[25]:
+
+
+dataset['Self_Employed'].fillna(dataset['Self_Employed'].mode,inplace= True)
+
+
+# In[26]:
+
+
+dataset.LoanAmount=dataset.LoanAmount.fillna(dataset.LoanAmount.mean())
+dataset.LoanAmount_log=dataset.LoanAmount_log.fillna(dataset.LoanAmount_log.mean())
+
+
+# In[27]:
+
+
+dataset['Loan_Amount_Term'].fillna(dataset['Loan_Amount_Term'].mode()[0],inplace= True)
+
+
+# In[28]:
+
+
+dataset['Credit_History'].fillna(dataset['Credit_History'].mode()[0],inplace= True)
+
+
+# In[29]:
+
+
+dataset.isnull().sum()
+
+
+# In[30]:
+
+
+dataset['TotalIncome']= dataset['ApplicantIncome']+dataset['CoapplicantIncome']
+dataset['TotalIncome_log']= np.log(dataset['TotalIncome'])
+
+
+# In[31]:
+
+
+dataset['TotalIncome_log'].hist(bins = 20)
+
+
+# In[32]:
+
+
+dataset.head(10)
+
+
+# In[63]:
+
+
+X= dataset.iloc[:, np.r_[1:5,9:11,13:15]].values
+Z= dataset.iloc[:,12].values
+
+
+# In[45]:
+
+
+X
+
+
+# In[64]:
+
+
+Z
+
+
+# In[74]:
+
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, Z_train, Z_test = train_test_split(X, Z, test_size=0.2, random_state=0)
+
+
+# In[75]:
+
+
+print(X_train)
+
+
+# In[ ]:
+
+
+#use label convertor to convert charater text to numeric 
+
+
+# In[76]:
+
+
+from sklearn.preprocessing import LabelEncoder
+labelencoder_X = LabelEncoder()
+
+
+# In[77]:
+
+
+for i in range(0, 5):
+    X_train[:,i]= labelencoder_X.fit_transform(X_train[:,i])
+
+
+# In[78]:
+
+
+X_train[:,7]=labelencoder_X.fit_transform(X_train[:,7])
+
+
+# In[79]:
+
+
+X_train
+
+
+# In[80]:
+
+
+labelencoder_Z= LabelEncoder()
+Z_train =labelencoder_Z.fit_transform(Z_train)
+
+
+# In[81]:
+
+
+Z_train
+
+
+# In[82]:
+
+
+for i in range(0, 5):
+    X_test[:,i]= labelencoder_X.fit_transform(X_test[:,i])
+
+
+# In[83]:
+
+
+X_test[:,7]=labelencoder_X.fit_transform(X_test[:,7])
+
+
+# In[85]:
+
+
+labelencoder_Z= LabelEncoder()
+Z_test =labelencoder_Z.fit_transform(Z_test)
+
+
+# In[86]:
+
+
+Z_test
+
+
+# In[87]:
+
+
+from sklearn.preprocessing import StandardScaler
+ss=StandardScaler()
+X_train=ss.fit_transform(X_train)
+X_test=ss.fit_transform(X_test)
+
+
+# In[88]:
+
+
+#applying algorith
+
+
+# In[90]:
+
+
+from sklearn.tree import DecisionTreeClassifier
+DTC=DecisionTreeClassifier(criterion= 'entropy' , random_state=0)
+DTC.fit(X_train, Z_train)
+
+
+# In[134]:
+
+
+Z_pred= DTC.predict(X_test)
+Z_pred
+
+
+# In[135]:
+
+
+from sklearn import metrics
+print('the accuarcy:', metrics.accuracy_score(Z_pred,Z_test))
+
+
+# In[136]:
+
+
+from sklearn.naive_bayes import GaussianNB
+NBC=GaussianNB()
+NBC.fit(X_train,Z_train)
+
+
+# In[137]:
+
+
+Z_pred= NBC.predict(X_test)
+Z_pred
+
+
+# In[100]:
+
+
+print('the accuarcy:', metrics.accuracy_score(Z_pred,Z_test))
+
+
+# In[103]:
+
+
+testdata=pd.read_csv(r'C:\Users\Acer\OneDrive\Desktop\Python_Diwali_Sales_Analysis\archive\loan-test.csv')
+
+
+# In[104]:
+
+
+testdata.head()
+
+
+# In[105]:
+
+
+testdata.info()
+
+
+# In[106]:
+
+
+testdata.isnull().sum()
+
+
+# In[107]:
+
+
+testdata['Gender'].fillna(testdata['Gender'].mode()[0],inplace= True)
+
+
+# In[110]:
+
+
+testdata.isnull().sum()
+
+
+# In[113]:
+
+
+testdata['Dependents'].fillna(testdata['Dependents'].mode()[0],inplace= True)
+testdata['Loan_Amount_Term'].fillna(testdata['Loan_Amount_Term'].mode()[0],inplace= True)
+testdata['Credit_History'].fillna(testdata['Credit_History'].mode()[0],inplace= True)
+
+
+# In[114]:
+
+
+testdata['Self_Employed'].fillna(testdata['Self_Employed'].mode()[0],inplace= True)
+
+
+# In[118]:
+
+
+testdata.LoanAmount=testdata.LoanAmount.fillna(testdata.LoanAmount.mean())
+
+
+# In[120]:
+
+
+testdata['LoanAmount_log']=np.log(testdata['LoanAmount'])
+testdata['LoanAmount_log'].hist(bins =20)
+
+
+# In[121]:
+
+
+testdata.LoanAmount_log=testdata.LoanAmount_log.fillna(testdata.LoanAmount_log.mean())
+
+
+# In[122]:
+
+
+testdata.isnull().sum()
+
+
+# In[123]:
+
+
+testdata['TotalIncome']=testdata['ApplicantIncome']+testdata['CoapplicantIncome']
+
+
+# In[124]:
+
+
+testdata['TotalIncome_log']=np.log(testdata['TotalIncome'])
+
+
+# In[126]:
+
+
+test=testdata.iloc[:,np.r_[1:5,9:11,13:15]].values
+
+
+# In[127]:
+
+
+for i in range(0, 5):
+    test[:,i]= labelencoder_X.fit_transform(test[:,i])
+
+
+# In[128]:
+
+
+test[:,7]=labelencoder_X.fit_transform(test[:,7])
+
+
+# In[129]:
+
+
+test
+
+
+# In[130]:
+
+
+from sklearn.preprocessing import StandardScaler
+ss=StandardScaler()
+
+test=ss.fit_transform(test)
+
+
+# In[133]:
+
+
+pred= NBC.predict(test)
+pred
+
+
+# In[ ]:
+
+
+
+
